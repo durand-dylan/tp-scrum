@@ -3,6 +3,10 @@ import sys
 import shutil
 import re
 
+if(len(sys.argv) < 2):
+	print('Il faut entrer un argument : le nom du dossier contenant les fichier à traiter')
+	exit()
+
 dossier_resultat = sys.argv[1]+'/parseur_resultat'
 
 if os.path.isdir(dossier_resultat):
@@ -33,7 +37,7 @@ for fic in listfic:
 			while(Lec.lower().find('abstract') != 0 and Lec !=''):
 				Lec = fd.readline()
 			if(Lec != ''):
-				fs.write('Résume : \n')
+				fs.write('Résumé : \n')
 				fs.write(re.sub('^abstract', '', Lec, flags=re.IGNORECASE))
 				Lec = fd.readline()
 				while(Lec.find('\n') == 0):
