@@ -40,71 +40,92 @@ listfic = os.listdir(dossier)
 for fic in listfic:
     
         if fic[-4:] == '.txt':
-            
-            fd = open(dossier + "/" + fic, "r")
-            
-            fs = open(dossier_resultat + "/" + fic[:-4] + '_information.txt', "w") 
+            fs = open(dossier + "/" + fic, "r")
             
             if(option == '-x'):
-                fs.write('<article>\n')
-            
-            if(option == '-x'):
-                fs.write('\t<preamble> ')
+                fd = open(dossier_resultat + "/" + fic[:-4] + '_information.xml', "w") 
             else:
-                fs.write('Nom du fichier : ')
+                fd = open(dossier_resultat + "/" + fic[:-4] + '_information.txt', "w") 
+                
             #Récuperation nom du fichier
-            fs.write(fic)
             if(option == '-x'):
-                fs.write(' </preamble>')
-            fs.write('\n')
+                fd.write('<article>\n')
             
             if(option == '-x'):
-                fs.write('\t<titre> ')
+                fd.write('\t<preamble> ')
             else:
-                fs.write('Titre : ')
-            #Récuperation titre
-            Lec = fd.readline()
-            fs.write(Lec.replace('\n', ''))
+                fd.write('Nom du fichier : ')
+            fd.write(fic)
             if(option == '-x'):
-                fs.write(' </titre>')
-            fs.write('\n')
+                fd.write(' </preamble>')
+            fd.write('\n')
+            
+            #Récuperation titre
+            if(option == '-x'):
+                fd.write('\t<titre> ')
+            else:
+                fd.write('Titre : ')
+            Lec = fs.readline()
+            fd.write(Lec.replace('\n', '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+            if(option == '-x'):
+                fd.write(' </titre>')
+            fd.write('\n')
             
             #Récuperation auteurs
-            
+            authorFound = False
+            while('abstract' not in Lec.lower() and Lec !=''):
+                Lec = fs.readline()
+                if('@' in Lec):
+                    if(authorFound == False):
+                        if(option == '-x'):
+                            fd.write('\t<author> ')
+                        else:
+                            fd.write('Auteur(s) : ')
+                        authorFound = True
+                    else:
+                         fd.write('; ')
+                    if(option == '-x'):
+                        fd.write(Lec.replace('\n', '').replace(',', ''))
+                    else:
+                        fd.write(Lec)
+            if(authorFound == True):
+                if(option == '-x'):
+                    fd.write(' </author>')
+                fd.write('\n')
+            elif(option == '-t'):
+                fd.write('Aucun auteur trouvé')
             
             #Récupération résumé
             while(Lec.lower().find('abstract') != 0 and Lec !=''):
-                Lec = fd.readline()
+                Lec = fs.readline()
             if(Lec != ''):
                 if(option == '-x'):
-                    fs.write('\t<abstract> ')
+                    fd.write('\t<abstract>')
                 else:
-                    fs.write('Résumé : \n')
-                fs.write(re.sub('^abstract', '', Lec, flags=re.IGNORECASE).replace('\n', ' '))
-                Lec = fd.readline()
+                    fd.write('Résumé :')
+                fd.write(re.sub('^abstract', '\n\t\t', Lec.replace('\n', ''), flags=re.IGNORECASE))
+                Lec = fs.readline()
                 while(Lec.find('\n') == 0):
-                    Lec = fd.readline()
+                    Lec = fs.readline()
                 while(Lec.find('\n')>0 and Lec !=''):
                     if(option == '-x'):
-                        fs.write(Lec.replace('\n', ' '))
+                        fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
                     else:
-                        fs.write(Lec)
-                    Lec = fd.readline()
+                        fd.write(Lec)
+                    Lec = fs.readline()
                 if(option == '-x'):
-                    fs.write('<abstract>')
-                fs.write('\n')
+                    fd.write('\t</abstract>')
+                fd.write('\n')
             else:
                 if(option == '-t'):
-                    fs.write('Pas de résumé')
+                    fd.write('Pas de résumé')
                     
                     
             #Récuperation bibliographie
             
             
             if(option == '-x'):
-                fs.write('</article>')
+                fd.write('</article>')
                 
             fd.close()
             fs.close()
-            
-            
