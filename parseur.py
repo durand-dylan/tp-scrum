@@ -129,7 +129,7 @@ for fic in listfic:
                     fd.write('\nPas de résumé\n')
                 fs.seek(0,0)
                 Lec = fs.readline()
-            
+                
             #Récuperation bibliographie
             while(Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0 and Lec !=''):
                 Lec = fs.readline()
@@ -138,15 +138,15 @@ for fic in listfic:
                     fd.write('\t<biblio>')
                 else:
                     fd.write('\nBibliographie :')
-                fd.write(re.sub('references', '\n', Lec.replace('\n', ''), flags=re.IGNORECASE))
+                fd.write(re.sub('references', '\n', Lec.replace('\n', '').replace('\x0c', ' '), flags=re.IGNORECASE))
                 Lec = fs.readline()
                 while(Lec.find('\n') == 0):
                     Lec = fs.readline()
                 while(Lec !=''):
                     if(option == '-x'):
-                        fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+                        fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\x0c', ' '))
                     else:
-                        fd.write(Lec)
+                        fd.write(Lec.replace('\x0c', ' '))
                     Lec = fs.readline()
                 if(option == '-x'):
                     fd.write('\n\t</biblio>')
