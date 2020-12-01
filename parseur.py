@@ -64,7 +64,7 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\t<titre> ')
             else:
-                fd.write('Titre : ')
+                fd.write('\nTitre : ')
             Lec = fs.readline()
             fd.write(Lec.replace('\n', '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
             if(option == '-x'):
@@ -78,22 +78,30 @@ for fic in listfic:
                 if('@' in Lec):
                     if(authorFound == False):
                         if(option == '-x'):
-                            fd.write('\t<author> ')
+                            fd.write('\t<author>\n')
                         else:
-                            fd.write('Auteur(s) : ')
+                            fd.write('\nAuteur(s) : \n')
                         authorFound = True
                     else:
-                         fd.write('; ')
+                        fd.write('; \n')
+                    nom_prenom = Lec.rsplit('@')[0]
+                    nom_prenom = nom_prenom.rsplit(' ')
+                    nom_prenom = nom_prenom[len(nom_prenom) - 1]
+                    nom_prenom = nom_prenom.rsplit('.')
                     if(option == '-x'):
-                        fd.write(Lec.replace('\n', '').replace(',', ''))
-                    else:
-                        fd.write(Lec)
+                        fd.write('\t\t')
+                    fd.write(nom_prenom[0].capitalize())
+                    if(len(nom_prenom) > 1):
+                        fd.write(' ' + nom_prenom[1].capitalize())
+                    Email = Lec.rsplit(' ')
+                    Email = Email[len(Email) - 1]
+                    fd.write(' | Email : ' + Email.replace('\n', '').replace(',', ''))
             if(authorFound == True):
                 if(option == '-x'):
-                    fd.write(' </author>')
+                    fd.write('\n\t</author>')
                 fd.write('\n')
             elif(option == '-t'):
-                fd.write('Aucun auteur trouvé')
+                fd.write('\nAucun auteur trouvé\n')
             
             #Récupération résumé
             while(Lec.lower().find('abstract') != 0 and Lec !=''):
@@ -102,8 +110,8 @@ for fic in listfic:
                 if(option == '-x'):
                     fd.write('\t<abstract>')
                 else:
-                    fd.write('Résumé :')
-                fd.write(re.sub('^abstract', '\n\t\t', Lec.replace('\n', ''), flags=re.IGNORECASE))
+                    fd.write('\nRésumé :')
+                fd.write(re.sub('^abstract', '\n', Lec.replace('\n', ''), flags=re.IGNORECASE))
                 Lec = fs.readline()
                 while(Lec.find('\n') == 0):
                     Lec = fs.readline()
@@ -118,14 +126,15 @@ for fic in listfic:
                 fd.write('\n')
             else:
                 if(option == '-t'):
-                    fd.write('Pas de résumé')
+                    fd.write('\nPas de résumé')
                     
                     
             #Récuperation bibliographie
             
             
+
             if(option == '-x'):
                 fd.write('</article>')
-                
+
             fd.close()
             fs.close()
