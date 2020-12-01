@@ -126,36 +126,38 @@ for fic in listfic:
                 fd.write('\n')
             else:
                 if(option == '-t'):
-                    fd.write('\nPas de résumé')
-					
-					
-			#Récuperation bibliographie
-			while(Lec.lower().find('references') != 0 and Lec !=''):
-				Lec = fs.readline()
-			if(Lec != ''):
-				if(option == '-x'):
-					fd.write('\t<biblio>')
-				else:
-					fd.write('Bibliographie :')
-				fd.write(re.sub('^references', '\n\t\t', Lec.replace('\n', ''), flags=re.IGNORECASE))
-				Lec = fs.readline()
-				while(Lec.find('\n') == 0):
-					Lec = fs.readline()
-				while(Lec.find('\n')>0 and Lec !=''):
-					if(option == '-x'):
-						fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\u2191', ''))
-					else:
-						fd.write(Lec)
-					Lec = fs.readline()
-				if(option == '-x'):
-					fd.write('\t</biblio>')
-				fd.write('\n')
-			else:
-				if(option == '-t'):
-					fd.write('Pas de bibliographie')
+                    fd.write('\nPas de résumé\n')
+                fs.seek(0,0)
+                Lec = fs.readline()
+            
+            #Récuperation bibliographie
+            while(Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0 and Lec !=''):
+                Lec = fs.readline()
+            if(Lec != ''):
+                if(option == '-x'):
+                    fd.write('\t<biblio>')
+                else:
+                    fd.write('\nBibliographie :')
+                fd.write(re.sub('references', '\n', Lec.replace('\n', ''), flags=re.IGNORECASE))
+                Lec = fs.readline()
+                while(Lec.find('\n') == 0):
+                    Lec = fs.readline()
+                while(Lec !=''):
+                    if(option == '-x'):
+                        fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+                    else:
+                        fd.write(Lec)
+                    Lec = fs.readline()
+                if(option == '-x'):
+                    fd.write('\n\t</biblio>')
+                fd.write('\n')
+            else:
+                if(option == '-t'):
+                    fd.write('\nPas de bibliographie')
+            
 
-			if(option == '-x'):
-				fd.write('</article>')
+            if(option == '-x'):
+                fd.write('</article>')
 
-			fd.close()
-			fs.close()
+            fd.close()
+            fs.close()
