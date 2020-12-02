@@ -130,18 +130,6 @@ for fic in listfic:
                 fs.seek(0,0)
                 Lec = fs.readline()
                 
-            #Récuperation introduction
-            
-            
-            #Récuperation corp
-            
-            
-            #Récuperation conclusion
-            
-            
-            #Récuperation discussion
-            
-            
             #Récuperation bibliographie
             while(Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0 and Lec !=''):
                 Lec = fs.readline()
