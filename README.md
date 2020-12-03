@@ -14,3 +14,7 @@ option -t : format txt
 option par défaut : -x (xml)
 
 Possibilité de mettre l'option avant ou après le nom du fichier
+
+Menu textuel au début du programme pour choisir si on veut parser tout le dossier 
+
+Si on ne veut pas parser tout le dossier, menu pour choisir les fichiers à parser un par un
