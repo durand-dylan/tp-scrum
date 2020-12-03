@@ -160,6 +160,39 @@ for fic in listfic:
             fs.seek(0,0)
             Lec = fs.readline()
             
+        #Récupération introduction
+        while(Lec.lower().find('introduction') != 0 and Lec !=''):
+            Lec = fs.readline()
+        if(Lec != ''):
+            if(option == '-x'):
+                fd.write('\t<introduction>')
+            else:
+                fd.write('\nIntroduction :')
+            fd.write(re.sub('^introduction', '\n', Lec.replace('\n', ''), flags=re.IGNORECASE))
+            Lec = fs.readline()
+            while(Lec.find('\n') == 0):
+                Lec = fs.readline()
+            while(Lec.find('\n')>0 and Lec !=''):
+                if(option == '-x'):
+                    fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+                else:
+                    fd.write(Lec)
+                Lec = fs.readline()
+            if(option == '-x'):
+                fd.write('\t</introduction>')
+            fd.write('\n')
+        else:
+            if(option == '-t'):
+                fd.write('\nPas de introduction\n')
+            fs.seek(0,0)
+            Lec = fs.readline()
+            
+        #Récuperation corps
+        
+        #Récuperation conclusion
+        
+        #Récuperation discussion
+        
         #Récuperation bibliographie
         while(Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0 and Lec !=''):
             Lec = fs.readline()
