@@ -3,7 +3,6 @@ import sys
 import shutil
 import re
 
-
 if(len(sys.argv) < 2):
     print('Erreur : il faut entrer un argument : le nom du dossier contenant les fichier à traiter')
     exit()
@@ -39,43 +38,59 @@ listfic = os.listdir(dossier)
 
 os.mkdir(dossier_resultat)
 
-imax = len(listfic)
-i = 0
-while i < imax:
-    bonChoix = False
-    while(bonChoix == False):
-        print('Parser le fichier "' + listfic[i] + '" ?')
-        print('1)Oui')
-        print('2)Non')
-        try:
-            choix = int(input())
-        except Exception:
-            choix = -1
-        if(choix == 1):
-            print('Le fichier "' + listfic[i] + '" sera parsé')
-            i = i + 1
-            bonChoix = True
-        elif(choix == 2):
-            print('Le fichier "' + listfic[i] + '" ne sera pas parsé')
-            listfic.pop(i)
-            imax = imax - 1
-            bonChoix = True
-        else:
-            print('Mauvaise valeur entrée : entrez 1 ou 2')
-        print('\n')
+bonChoix = False
+while(bonChoix == False):
+    print('Parser tout le répertoire "' + dossier + '" ?')
+    print('1)Oui, parser tout le répertoire')
+    print('2)Non, choisir les fichiers à parser dans le répertoire')
+    try:
+        choix = int(input())
+    except Exception:
+        choix = -1
+    if(choix == 1 or choix == 2):
+        bonChoix = True
+    else:
+        print('Mauvaise valeur entrée : entrez 1 ou 2')
+    print('\n')
+    
+if(choix == 2):
+    imax = len(listfic)
+    i = 0
+    while i < imax:
+        bonChoix = False
+        while(bonChoix == False):
+            print('Parser le fichier "' + listfic[i] + '" ?')
+            print('1)Oui')
+            print('2)Non')
+            try:
+                choix = int(input())
+            except Exception:
+                choix = -1
+            if(choix == 1):
+                print('Le fichier "' + listfic[i] + '" sera parsé')
+                i = i + 1
+                bonChoix = True
+            elif(choix == 2):
+                print('Le fichier "' + listfic[i] + '" ne sera pas parsé')
+                listfic.pop(i)
+                imax = imax - 1
+                bonChoix = True
+            else:
+                print('Mauvaise valeur entrée : entrez 1 ou 2')
+            print('\n')
 
-
-save_position = 0
 for fic in listfic:
-    if fic[-4:] == '.txt':
-        fs = open(dossier + "/" + fic, "r")
+    if fic[-4:] == '.pdf':
+        os.system("pdftotext " + dossier + fic.replace(' ', '\ '))
+        
+        fs = open(dossier + fic[:-4] + ".txt", "r")
         
         if(option == '-x'):
             fd = open(dossier_resultat + "/" + fic[:-4] + '_information.xml', "w") 
         else:
             fd = open(dossier_resultat + "/" + fic[:-4] + '_information.txt', "w") 
             
-        #Récuperation nom du fichier
+        # Récuperation nom du fichier
         if(option == '-x'):
             fd.write('<article>\n')
         
@@ -204,7 +219,7 @@ for fic in listfic:
             Lec = fs.readline()
 
 
-        # corps
+        #Récuperation corps
         if(option == '-x'):
             fd.write('\t<corps>')
         else:
@@ -250,7 +265,7 @@ for fic in listfic:
             save_position = fd.tell()
         else:
             if(option == '-x'):
-                fd.write('<discussion></discussion>\n')
+                fd.write('\t<discussion></discussion>\n')
             else:
                 fd.write('\nPas de discussion')
             fs.seek(save_position,0)
@@ -311,13 +326,14 @@ for fic in listfic:
             fd.write('\n')
         else:
             if(option == '-x'):
-                fd.write('<biblio></biblio>\n')
+                fd.write('\t<biblio></biblio>\n')
             else:
                 fd.write('\nPas de bibliographie')
         
 
         if(option == '-x'):
             fd.write('</article>')
-
+        
         fd.close()
         fs.close()
+        os.remove(fs.name)
