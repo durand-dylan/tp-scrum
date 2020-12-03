@@ -3,6 +3,7 @@ import sys
 import shutil
 import re
 
+
 if(len(sys.argv) < 2):
     print('Erreur : il faut entrer un argument : le nom du dossier contenant les fichier à traiter')
     exit()
@@ -63,6 +64,8 @@ while i < imax:
             print('Mauvaise valeur entrée : entrez 1 ou 2')
         print('\n')
 
+
+save_position = 0
 for fic in listfic:
     if fic[-4:] == '.txt':
         fs = open(dossier + "/" + fic, "r")
@@ -95,6 +98,7 @@ for fic in listfic:
         if(option == '-x'):
             fd.write(' </titre>')
         fd.write('\n')
+        save_position = fd.tell()
         
         #Récuperation auteurs
         authorFound = False
@@ -125,11 +129,14 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\n\t</author>')
             fd.write('\n')
+            save_position = fd.tell()
         else:
             if(option == '-x'):
                 fd.write('\t<author></author>\n')
             else:
                 fd.write('\nAucun auteur trouvé\n')
+            fs.seek(save_position,0)
+            Lec = fs.readline()
         
         #Récupération résumé
         while(Lec.lower().find('abstract') != 0 and Lec !=''):
@@ -152,17 +159,21 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\t</abstract>')
             fd.write('\n')
+            save_position = fd.tell()
         else:
             if(option == '-x'):
                 fd.write('\t<abstract></abstract>\n')
             else:
                 fd.write('\nPas de résumé\n')
-            fs.seek(0,0)
+            fs.seek(save_position,0)
+            Lec = fs.readline()
+
+
+
+        #Récupération introduction
+        while(re.search('^\s*(1|I)?\.?\s*i\s?n\s?t\s?r\s?o\s?d\s?u\s?c\s?t\s?i\s?o\s?n(.|\s)*$',Lec,flags=re.IGNORECASE) is None and Lec!=''):
             Lec = fs.readline()
             
-        #Récupération introduction
-        while(Lec.lower().find('introduction') != 0 and Lec !=''):
-            Lec = fs.readline()
         if(Lec != ''):
             if(option == '-x'):
                 fd.write('\t<introduction>')
@@ -172,27 +183,111 @@ for fic in listfic:
             Lec = fs.readline()
             while(Lec.find('\n') == 0):
                 Lec = fs.readline()
-            while(Lec.find('\n')>0 and Lec !=''):
+            
+            while(re.search('^\s*(2|(II))\.?(\s+(\s|.)*)?$',Lec,flags=re.IGNORECASE) is None and Lec!=''):
                 if(option == '-x'):
                     fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
                 else:
                     fd.write(Lec)
                 Lec = fs.readline()
+                
             if(option == '-x'):
                 fd.write('\t</introduction>')
             fd.write('\n')
+            save_position=fd.tell()
         else:
-            if(option == '-t'):
-                fd.write('\nPas de introduction\n')
+            if(option == '-x'):
+                fd.write('\t<introduction></introduction>\n')
+            else:
+                fd.write('\nPas d\'introduction \n')
+            fs.seek(save_position,0)
+            Lec = fs.readline()
+
+
+        # corps
+        if(option == '-x'):
+            fd.write('\t<corps>')
+        else:
+            fd.write('\nCorps :')
+        while(
+        	(re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None)
+        	and ((Lec.lower().find('') != 1 and Lec.lower().find('discussion')))
+        	and (Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0)
+        	and Lec !=''):
+            
+            Lec = fs.readline()
+            if(option == '-x'):
+                fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\x0c', ' '))
+            else:
+                fd.write(Lec.replace('\x0c', ' '))
+        if(option == '-x'):
+            fd.write('\t</corps>')
+        fd.write('\n')
+        save_position=fd.tell()
+
+
+        #Récuperation discussion
+        while(Lec.lower().find('') != 1 and Lec.lower().find('discussion') != 0 and Lec !=''):
+            Lec = fs.readline()
+        if(Lec != ''):
+            if(option == '-x'):
+                fd.write('\t<discussion>')
+            else:
+                fd.write('\nDiscussion :')
+            fd.write(re.sub('discussion', '\n', Lec.replace('\n', '').replace('\x0c', ' '), flags=re.IGNORECASE))
+            Lec = fs.readline()
+            while(Lec.find('\n') == 0):
+                Lec = fs.readline()
+            while(Lec !=''):
+                if(option == '-x'):
+                    fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\x0c', ' '))
+                else:
+                    fd.write(Lec.replace('\x0c', ' '))
+                Lec = fs.readline()
+            if(option == '-x'):
+                fd.write('\n\t</discussion>')
+            fd.write('\n')
+            save_position = fd.tell()
+        else:
+            if(option == '-x'):
+                fd.write('<discussion></discussion>\n')
+            else:
+                fd.write('\nPas de discussion')
+            fs.seek(save_position,0)
+            Lec = fs.readline()
+
+        #recuperation conclusion
+        while(re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None and Lec!=''):
+            Lec = fs.readline()
+            
+        if(Lec != ''):
+            if(option == '-x'):
+                fd.write('\t<conclusion>')
+            else:
+                fd.write('\nConclusion :')
+            fd.write(re.sub('^Conclusion', '\n', Lec.replace('\n', ''), flags=re.IGNORECASE))
+            Lec = fs.readline()
+            while(Lec.find('\n') == 0):
+                Lec = fs.readline()
+            
+            while(re.search('^\s*([0-9]*|([IV]*))?\.?\s*Reference',Lec,flags=re.IGNORECASE) is None and Lec!=''):
+                if(option == '-x'):
+                    fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+                else:
+                    fd.write(Lec)
+                Lec = fs.readline()
+                
+            if(option == '-x'):
+                fd.write('\t</conclusion>')
+            fd.write('\n')
+        else:
+            if(option == '-x'):
+                fd.write('\t<conclusion></conclusion>\n')
+            else:
+                fd.write('\nPas de conclusion \n')
             fs.seek(0,0)
             Lec = fs.readline()
             
-        #Récuperation corps
-        
-        #Récuperation conclusion
-        
-        #Récuperation discussion
-        
         #Récuperation bibliographie
         while(Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0 and Lec !=''):
             Lec = fs.readline()
