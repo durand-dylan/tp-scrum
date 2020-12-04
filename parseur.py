@@ -81,9 +81,9 @@ if(choix == 2):
 
 for fic in listfic:
     if fic[-4:] == '.pdf':
-        os.system("pdftotext " + dossier + fic.replace(' ', '\ '))
+        os.system("pdftotext " + dossier + "/" + fic.replace(' ', '\ ') + " " + dossier_resultat + "/" + fic[:-4] + ".txt")
         
-        fs = open(dossier + fic[:-4] + ".txt", "r")
+        fs = open(dossier_resultat + "/" + fic[:-4] + ".txt", "r")
         
         if(option == '-x'):
             fd = open(dossier_resultat + "/" + fic[:-4] + '_information.xml', "w") 
@@ -113,7 +113,7 @@ for fic in listfic:
         if(option == '-x'):
             fd.write(' </titre>')
         fd.write('\n')
-        save_position = fd.tell()
+        save_position = fs.tell()-len(Lec)
         
         #Récuperation auteurs
         authorFound = False
@@ -144,7 +144,8 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\n\t</author>')
             fd.write('\n')
-            save_position = fd.tell()
+            if(Lec != ''):
+                save_position = fs.tell()-len(Lec)
         else:
             if(option == '-x'):
                 fd.write('\t<author></author>\n')
@@ -174,13 +175,13 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\t</abstract>')
             fd.write('\n')
-            save_position = fd.tell()
+            save_position = fs.tell()-len(Lec)
         else:
             if(option == '-x'):
                 fd.write('\t<abstract></abstract>\n')
             else:
                 fd.write('\nPas de résumé\n')
-            fs.seek(save_position,0)
+            fs.seek(save_position, 0)
             Lec = fs.readline()
 
 
@@ -209,7 +210,7 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\t</introduction>')
             fd.write('\n')
-            save_position=fd.tell()
+            save_position=fs.tell()-len(Lec)
         else:
             if(option == '-x'):
                 fd.write('\t<introduction></introduction>\n')
@@ -225,26 +226,33 @@ for fic in listfic:
         else:
             fd.write('\nCorps :')
         while(
-        	(re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None)
-        	and ((Lec.lower().find('') != 1 and Lec.lower().find('discussion')))
-        	and (Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0)
-        	and Lec !=''):
-            
-            Lec = fs.readline()
+        re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None
+        and re.search('^\s*([0-9]*|([IV]*))?\.?\s*Discussion',Lec,flags=re.IGNORECASE) is None
+        and Lec.lower().find('') != 1 and Lec.lower().find('discussion')
+        and Lec !=''):
             if(option == '-x'):
                 fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\x0c', ' '))
             else:
                 fd.write(Lec.replace('\x0c', ' '))
+            Lec = fs.readline()
         if(option == '-x'):
             fd.write('\t</corps>')
         fd.write('\n')
-        save_position=fd.tell()
-
+        save_position=fs.tell()-len(Lec)
+        
 
         #Récuperation discussion
-        while(Lec.lower().find('') != 1 and Lec.lower().find('discussion') != 0 and Lec !=''):
+        while(Lec.lower().find('') != 1 
+        and Lec.lower().find('discussion') != 0
+        and re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None
+        and re.search('^\s*([0-9]*|([IV]*))?\.?\s*Discussion',Lec,flags=re.IGNORECASE) is None
+        and Lec.lower().find('reference') != 1 and Lec.lower().find('reference')
+        and Lec !=''):
             Lec = fs.readline()
-        if(Lec != ''):
+       
+        if(Lec != '' 
+        and re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None
+        and Lec.lower().find('references') != 1 and Lec.lower().find('references')):
             if(option == '-x'):
                 fd.write('\t<discussion>')
             else:
@@ -253,7 +261,9 @@ for fic in listfic:
             Lec = fs.readline()
             while(Lec.find('\n') == 0):
                 Lec = fs.readline()
-            while(Lec !=''):
+            while(Lec !=''
+            and re.search('^\s*([0-9]*|([IV]*))?\.?\s*Conclusion',Lec,flags=re.IGNORECASE) is None
+            and Lec.lower().find('references') != 1 and Lec.lower().find('references') != 0):
                 if(option == '-x'):
                     fd.write('\t\t' + Lec.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\x0c', ' '))
                 else:
@@ -262,7 +272,7 @@ for fic in listfic:
             if(option == '-x'):
                 fd.write('\n\t</discussion>')
             fd.write('\n')
-            save_position = fd.tell()
+            save_position = fs.tell()-len(Lec)
         else:
             if(option == '-x'):
                 fd.write('\t<discussion></discussion>\n')
